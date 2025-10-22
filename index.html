@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+        />
+        <link rel="icon" href="favicon.ico" type="image/x-icon" />
+
+        <meta
+            name="description"
+            content="A game where you slash enemies by drawing on the screen"
+        />
+
+        <title>Sword and Roll</title>
+
+        <!-- Cormorant Garamond font, 600 weight -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Azeret Mono font, 400 weight -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Azeret+Mono&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Match adress bar color to game's background on mobile Chrome -->
+        <meta name="theme-color" content="#2f2f2f" />
+      <script type="module" crossorigin src="/sword-and-roll-hosting/assets/index-WHxBmJEL.js"></script>
+      <link rel="stylesheet" crossorigin href="/sword-and-roll-hosting/assets/index-D5OUFDXZ.css">
+    </head>
+    <body class="garamond-font">
+        <div id="spinner-wrapper">
+            <div id="spinner"></div>
+        </div>
+
+        <section id="title-screen" class="hidden preload">
+            <img
+                id="cover-image"
+                src="cover-image.jpg"
+                alt="title screen background"
+            />
+            <h1 id="title" class="blur">Sword and Roll</h1>
+            <div id="goals" class="blur">
+                <div id="goals-header" class="goals-line">
+                    <span>•</span>
+                    <span data-i18n="if-you-survive"
+                        >If you<br />survive for</span
+                    >
+                    <span data-i18n="you-get">You get</span>
+                </div>
+                <div class="goals-line">
+                    <span id="one-star-checkmark" class="not-achieved">✅</span>
+                    <span>1:15</span>
+                    <span>⭐</span>
+                </div>
+                <div class="goals-line">
+                    <span id="two-stars-checkmark" class="not-achieved"
+                        >✅</span
+                    >
+                    <span>2:00</span>
+                    <span>⭐⭐</span>
+                </div>
+                <div class="goals-line">
+                    <span id="three-stars-checkmark" class="not-achieved"
+                        >✅</span
+                    >
+                    <span>2:45</span>
+                    <span>⭐⭐⭐</span>
+                </div>
+                <div class="goals-line">
+                    <span id="ending-checkmark" class="not-achieved">✅</span>
+                    <span>3:00</span>
+                    <span data-i18n="the-ending">The ending</span>
+                </div>
+            </div>
+            <button
+                id="start-button"
+                class="garamond-font blur"
+                data-i18n="start"
+            >
+                Start
+            </button>
+            <div id="footer">
+                <div class="blur">
+                    © 2025 Konstantin Ivanov - konstiv23 at gmail -
+                    <button
+                        id="asset-credits-button"
+                        class="garamond-font"
+                        onclick="showAssetCredits()"
+                    >
+                        asset credits
+                    </button>
+                    - v0.1.0
+                </div>
+                <dialog id="assets-dialog">
+                    <div>Asset Credits:</div>
+                    <ul>
+                        <li>Paladin J Nordstrom, Mixamo</li>
+                        <li>Romero, Mixamo</li>
+                        <li>
+                            Male Grunts by abraksil --
+                            https://freesound.org/s/727827/ -- License: Creative
+                            Commons 0
+                        </li>
+                        <li>Reservoir Dam Water by Powie, Pixabay</li>
+                    </ul>
+                    <button onclick="closeAssetCredits()">Close</button>
+                </dialog>
+            </div>
+        </section>
+
+        <canvas id="three-canvas"></canvas>
+        <canvas id="tracing-canvas"></canvas>
+
+        <div id="timer-and-record" class="no-pointer-events">
+            <div id="timer" class="azeret-font">00:00</div>
+            <div id="record-gameplay">
+                <div data-i18n="best">Best</div>
+                <div id="record-gameplay-value">--:--</div>
+                <div id="record-gameplay-stars"></div>
+            </div>
+        </div>
+
+        <div id="health-bar-wrapper" class="no-pointer-events">
+            <progress id="health-bar" max="100" value="100"></progress>
+        </div>
+
+        <div id="toast" class="no-pointer-events"></div>
+        <div id="paused-toast" class="no-pointer-events"></div>
+
+        <section id="main-buttons">
+            <!--
+                These were origininally <button>s, but they
+                activated with Space after click, we don't want that
+            -->
+            <div id="handedness-button">🖐️</div>
+            <div id="sword-dir-button"><span>&lt;&gt;</span></div>
+            <div id="pause-button">II</div>
+            <div id="full-screen-button">⛶</div>
+        </section>
+
+        <div id="red-splash" class="hidden no-pointer-events"></div>
+
+        <section id="game-over-screen">
+            <h1 data-i18n="you-died">You Died</h1>
+            <div id="game-over-time-and-stars">
+                <h2 id="survived-for">00:00</h2>
+                <span id="stars-game-over"></span>
+            </div>
+            <button
+                id="restart-button"
+                class="garamond-font"
+                data-i18n="restart"
+            >
+                Restart
+            </button>
+        </section>
+
+        <div id="debug-osd" class="no-pointer-events"></div>
+
+        <section id="ending-comic" class="hidden preload">
+            <div id="ending-panels">
+                <img src="ending-panel-1.jpg" alt="ending comic panel 1" />
+                <img src="ending-panel-2.jpg" alt="ending comic panel 2" />
+            </div>
+        </section>
+
+        <dialog id="survived-dialog">
+            <div id="survived-container">
+                <h1 data-i18n="you-survived">You Survived</h1>
+                <div id="survived-timer-and-stars">
+                    <div id="survived-timer"></div>
+                    <div id="survived-stars"></div>
+                </div>
+                <div data-i18n="thanks">Thank you for playing!</div>
+                <button
+                    id="survived-close-button"
+                    class="garamond-font"
+                    data-i18n="close"
+                >
+                    Close
+                </button>
+            </div>
+        </dialog>
+
+        <script>
+            function showAssetCredits() {
+                const dialog = document.getElementById("assets-dialog");
+                dialog.shomModal();
+            }
+            function closeAssetCredits() {
+                const dialog = document.getElementById("assets-dialog");
+                dialog.close();
+            }
+            window.addEventListener("load", () => {
+                document
+                    .querySelectorAll(".preload")
+                    .forEach((el) => el.classList.remove("preload"));
+            });
+        </script>
+    </body>
+</html>
